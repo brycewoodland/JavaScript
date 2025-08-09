@@ -1,0 +1,40 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin: 0 auto;
+    max-width: 1200px;
+    background: black;
+}
+
+h1, h2 {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+    color: white;
+}
+
+.data-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    place-items: center;
+}
+
+div {
+    margin: 40px;
+    place-content: center;
+}
+
+img, p {
+    margin: 0 auto;
+}
+
+@media (max-width: 730px) {
+    .data-container {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+}
