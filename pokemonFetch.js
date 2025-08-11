@@ -1,52 +1,133 @@
+const modal = document.getElementById('ability-modal');
+const modalName = document.getElementById('modal-ability-name');
+const modalEffect = document.getElementById('modal-ability-effect');
+const modalShortEffect = document.getElementById('modal-ability-short-effect');
+const modalCloseBtn = document.getElementById('ability-modal-close');
+
+modalCloseBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+});
+modal.addEventListener('click', (e) => {
+    if (e.target === modal) { // close when clicking outside modal content
+        modal.style.display = 'none';
+    }
+});
+
+
 const URL = 'https://pokeapi.co/api/v2/pokemon/';
 
-const fetchPokemon = async () => {
+const fetchPokemonList = async () => {
     try {
-        const response = await fetch(URL);
-
-        if (!response.ok) {
-            throw new Error(`Error: ${response.status}`);
+        const res = await fetch(URL);
+        if (!res.ok) {
+            throw new Error(`Error fetching list: ${res.status}`);
         }
-
-        const pokemonData = await response.json();
-        displayPokemon(pokemonData.results);
+        const data = await res.json();
+        return data.results;
     } catch (error) {
-        console.error('Fetch Error:', error);
-        const dataContainer = document.querySelector('.data-container');
-        const p = document.createElement('p');
-        p.textContent = `Failed to Fetch: ${error.message}`;
-        dataContainer.append(p);
+        console.error('fetchPokemonList error:', error);
+        throw error;
     }
 };
 
-const displayPokemon = async (pokemons) => {
+const fetchPokemonDetails = async (url) => {
+    try {
+        const res = await fetch(url);
+        if (!res.ok) {
+            throw new Error(`Error fetching details: ${res.status}`);
+        }
+        return await res.json();
+    } catch (error) {
+        console.error('fetchPokemonDetails error:', error);
+        throw error;
+    }
+};
+
+const fetchAbilityDetails = async (url) => {
+    try {
+        const res = await fetch(url);
+        if (!res.ok) {
+            throw new Error(`Error fetching ability: ${res.status}`);
+        }
+        return await res.json();
+    } catch (error) {
+        console.error('fetchAbilityDetails error:', error);
+        throw error;
+    }
+}
+
+const extractAbilities = (details) => {
+    return details.abilities.map(item => ({
+        name: item.ability.name,
+        url: item.ability.url,
+    }));
+};
+
+const createPokemonCard = (details) => {
+    const card = document.createElement('div');
+
+    // Name
+    const name = document.createElement('p');
+    name.textContent = details.name.charAt(0).toUpperCase() + details.name.slice(1);
+
+    // Image
+    const img = document.createElement('img');
+    img.src = details.sprites.front_default;
+    img.alt = details.name;
+
+    // Abilities container
+    const abilitiesContainer = document.createElement('div');
+    abilitiesContainer.textContent = 'Abilities: ';
+
+    // Create a button for each ability
+    const abilities = extractAbilities(details);
+    abilities.forEach(ability => {
+        const btn = document.createElement('button');
+        btn.textContent = ability.name;
+        btn.addEventListener('click', async () => {
+      try {
+        const abilityDetails = await fetchAbilityDetails(ability.url);
+
+        const effectEntry = abilityDetails.effect_entries.find(entry => entry.language.name === 'en');
+
+        if (effectEntry) {
+            modalName.textContent = ability.name.charAt(0).toUpperCase() + ability.name.slice(1);
+            modalEffect.textContent = effectEntry.effect;
+            modalShortEffect.textContent = effectEntry.short_effect;
+
+            modal.style.display = 'flex';
+        } else {
+            alert('No effect information available.');
+        }
+    } catch (error) {
+        alert('Failed to load ability details.');
+    }
+});
+
+
+        abilitiesContainer.appendChild(btn);
+    });
+
+    card.append(img, name, abilitiesContainer);
+    return card;
+};
+
+const displayPokemonList = async () => {
     const dataContainer = document.querySelector('.data-container');
     dataContainer.textContent = '';
- 
-    for (const pokemon of pokemons) {
-        try {
-            const detailedResponse = await fetch(pokemon.url);
-            if (!detailedResponse.ok) {
-                throw new Error(`Error: ${response.status}`);
-            }
 
-            const detailedData = await detailedResponse.json();
-            
-            const div = document.createElement('div');
-            const h2 = document.createElement('h2');
-            const img = document.createElement('img');
+    try {
+        const pokemonList = await fetchPokemonList();
 
-            h2.textContent = detailedData.name;
-            img.src = detailedData.sprites.front_default;
-            img.alt = detailedData.name;
-
-            div.append(h2);
-            div.append(img);
-            dataContainer.append(div);
-        } catch (error) {
-            console.error('Failed to display Pokemon:', error);
+        for (const pokemon of pokemonList) {
+            const details = await fetchPokemonDetails(pokemon.url);
+            const card = createPokemonCard(details);
+            dataContainer.append(card);
         }
+    } catch (error) {
+        console.error(error);
+        dataContainer.textContent = `Error: ${error.message}`;
     }
 };
 
-fetchPokemon();
+displayPokemonList();

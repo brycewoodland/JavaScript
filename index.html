@@ -3,12 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css" />
     <title>JavaScript Sandbox</title>
   </head>
   <body>
-    <h1>JavaScript Sandbox</h1>
-    <h2>Fetched Data</h2>
+    <h1>Fetched Pokemon Data</h1>
+    <div id="ability-modal" style="display:none;">
+      <div id="ability-modal-content">
+        <button id="ability-modal-close">X</button>
+        <h2 id="modal-ability-name"></h2>
+        <p id="modal-ability-effect"></p>
+        <p id="modal-ability-short-effect"></p>
+      </div>
+    </div>
+    </div>
+
     <div class="data-container"></div>
     <script src="pokemonFetch.js"></script>
   </body>
